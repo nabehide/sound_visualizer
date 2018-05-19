@@ -72,6 +72,7 @@ export class Pentagons{
 
   setVisible(select){
     if(select){
+      this.webgl.control.enabled = false;
       this.webgl.camera.position.set(0, 0, 30);
       this.webgl.camera.rotation.set(0, 0, 0);
       this.folder.open();
@@ -114,7 +115,7 @@ export class Pentagons{
     const split = 5;
     const theta = 360 / split;
     const radian = Math.PI * theta / 180;
-    const size = 10;
+    const size = 8;
 
     vertices.push(new THREE.Vector3(0, 0, 0));
     for(let i=0; i<split; i++){
