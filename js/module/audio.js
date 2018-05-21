@@ -1,6 +1,7 @@
 export class Audio{
-  constructor(webgl){
+  constructor(webgl, dataPath){
     this.webgl = webgl;
+    this.dataPath = dataPath;
     this.render_random();
 
     this.loadAudio();
@@ -27,12 +28,12 @@ export class Audio{
       _this.analyze.fftSize = 2048;
       _this.data = new Uint8Array(this.analyze.fftSize);
 
-      if (btn.classList.value == "fas fa-music fa-2x"){
+      if (btn.classList.value == "far fa-2x fa-play-circle"){
         _this.source.stop();
         _this.render_random();
       }else{
         const request = new XMLHttpRequest();
-        request.open("GET", "data/mrpu.m4a", true);
+        request.open("GET", this.dataPath, true);
         request.responseType = "arraybuffer"
 
         request.onload = function(){

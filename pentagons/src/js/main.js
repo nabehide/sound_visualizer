@@ -71,6 +71,42 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "../js/module/audio.js":
+/*!*****************************!*\
+  !*** ../js/module/audio.js ***!
+  \*****************************/
+/*! exports provided: Audio */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"Audio\", function() { return Audio; });\nclass Audio{\n  constructor(webgl, dataPath){\n    this.webgl = webgl;\n    this.dataPath = dataPath;\n    this.render_random();\n\n    this.loadAudio();\n\n    this.frequencyNum = 1024;\n  }\n\n  render_random(){\n    const _this = this;\n    (function animation(){\n      _this.webgl.render();\n      requestAnimationFrame(animation);\n    })();\n  }\n\n  loadAudio(){\n    const _this = this;\n\n    const btn = document.getElementById(\"soundIcon\");\n    btn.addEventListener(\"click\", () => {\n\n      _this.audioContext = (window.AudioContext) ? new AudioContext : new webkitAudioContext;\n      _this.analyze = this.audioContext.createAnalyser();\n      _this.analyze.fftSize = 2048;\n      _this.data = new Uint8Array(this.analyze.fftSize);\n\n      if (btn.classList.value == \"far fa-2x fa-play-circle\"){\n        _this.source.stop();\n        _this.render_random();\n      }else{\n        const request = new XMLHttpRequest();\n        request.open(\"GET\", this.dataPath, true);\n        request.responseType = \"arraybuffer\"\n\n        request.onload = function(){\n          _this.audioContext.decodeAudioData(request.response, function(buffer){\n            if(_this.source){\n              _this.source.stop();\n            }\n            _this.source = _this.audioContext.createBufferSource();\n            _this.source.buffer = buffer;\n            _this.source.loop = true;\n            _this.source.connect(_this.analyze);\n            _this.source.connect(_this.audioContext.destination);\n\n            _this.source.start(0);\n\n            (function animation(){\n              _this.analyze.getByteFrequencyData(_this.data);\n\n              _this.webgl.render();\n\n              requestAnimationFrame(animation);\n            })();\n\n          });\n        }.bind(_this);\n        request.send();\n      }\n    });\n  };\n}\n\n\n//# sourceURL=webpack:///../js/module/audio.js?");
+
+/***/ }),
+
+/***/ "../js/module/resize-watch.js":
+/*!************************************!*\
+  !*** ../js/module/resize-watch.js ***!
+  \************************************/
+/*! exports provided: ResizeWatch */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"ResizeWatch\", function() { return ResizeWatch; });\nclass ResizeWatch{\n  constructor(){\n    this.instances = [];\n\n    this.width = this._width = document.body.clientWidth;\n    this.height = this._height = window.innerHeight;\n    this.aspect = this.width / this.height;\n\n    window.onresize = function(){\n      if(this.instances.length === 0) return;\n\n      this.width = document.body.clientWidth;\n      this.height = window.innerHeight;\n      this.aspect = this.width / this.height;\n\n      for(let i=0; i<this.instances.length; i++){\n        this.instances[i].resizeUpdate();\n      }\n    }.bind(this)\n  }\n\n  register(instance){\n    this.instances.push(instance);\n  }\n}\n\nwindow.ResizeWatch = new ResizeWatch();\n\n\n//# sourceURL=webpack:///../js/module/resize-watch.js?");
+
+/***/ }),
+
+/***/ "../js/module/webgl.js":
+/*!*****************************!*\
+  !*** ../js/module/webgl.js ***!
+  \*****************************/
+/*! exports provided: Webgl */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"Webgl\", function() { return Webgl; });\nclass Webgl{\n  constructor(){\n    this.btn = document.getElementById(\"soundIcon\");\n    this.init();\n  }\n\n  init(){\n    window.ResizeWatch.register(this);\n\n    this.scene = new THREE.Scene();\n\n    this.gui = new dat.GUI({audoPlace: false});\n    this.gui.close();\n    const customContainer = document.getElementById(\"guiContainer\");\n    customContainer.appendChild(this.gui.domElement);\n\n    this.setProps();\n\n    this.camera = new THREE.PerspectiveCamera(this.props.fov, this.props.aspect, this.props.near, this.props.far);\n\n    this.renderer = new THREE.WebGLRenderer({\n      canvas: document.querySelector(\"#canvas\")\n    })\n    this.renderer.setPixelRatio(window.devicePixelRatio);\n    this.renderer.setClearColor(0x000000, 1);\n    this.renderer.setSize(window.ResizeWatch.width, window.ResizeWatch.height);\n\n    this.control = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n    this.control.enabled = true;\n\n    this.meshes = [];\n\n    this.resizeUpdate();\n  }\n\n  resizeUpdate(){\n    this.setProps();\n    this.renderer.setSize(this.props.width, this.props.height);\n    this.camera.aspect = this.props.aspect;\n  }\n\n  setProps(){\n    const width = window.ResizeWatch.width;\n    const height = window.ResizeWatch.height;\n    const aspect = width / height;\n\n    this.props = {\n      width: width,\n      height: height,\n      aspect: aspect,\n      fov: 45,\n      left: -width / 2,\n      right: width / 2,\n      top: height / 2,\n      bottom: -height / 2,\n      near: 0.1,\n      far: 10000,\n      parent: document.getElementById(\"wrapper\"),\n    };\n  };\n\n  render(){\n    if (this.btn.classList.value == \"far fa-2x openNav fa-stop-circle\"){\n      for(let i=0; i<this.meshes.length; i++){\n        this.meshes[i].render();\n      }\n      this.renderer.render(this.scene, this.camera);\n    }else{\n      for(let i=0; i<this.meshes.length; i++){\n        this.meshes[i].render_random()\n      }\n      this.renderer.render(this.scene, this.camera);\n    }\n  }\n}\n\n\n//# sourceURL=webpack:///../js/module/webgl.js?");
+
+/***/ }),
+
 /***/ "./index.js":
 /*!******************!*\
   !*** ./index.js ***!
@@ -79,43 +115,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _src_js_module_webgl_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./src/js/module/webgl.js */ \"./src/js/module/webgl.js\");\n/* harmony import */ var _src_js_module_audio_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/js/module/audio.js */ \"./src/js/module/audio.js\");\n/* harmony import */ var _src_js_scene_pentagons_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/js/scene/pentagons.js */ \"./src/js/scene/pentagons.js\");\n/* harmony import */ var _src_js_module_resize_watch_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/js/module/resize-watch.js */ \"./src/js/module/resize-watch.js\");\n\n\n\n\n\nconst webgl = new _src_js_module_webgl_js__WEBPACK_IMPORTED_MODULE_0__[\"Webgl\"]();\n\nwindow.onload = function(){\n\n  \"use strict\";\n\n  webgl.audio = new _src_js_module_audio_js__WEBPACK_IMPORTED_MODULE_1__[\"Audio\"](webgl);\n  webgl.meshes.push(new _src_js_scene_pentagons_js__WEBPACK_IMPORTED_MODULE_2__[\"Pentagons\"](webgl));\n\n  webgl.meshes[0].setVisible(true);\n}\n\n\n//# sourceURL=webpack:///./index.js?");
-
-/***/ }),
-
-/***/ "./src/js/module/audio.js":
-/*!********************************!*\
-  !*** ./src/js/module/audio.js ***!
-  \********************************/
-/*! exports provided: Audio */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"Audio\", function() { return Audio; });\nclass Audio{\n  constructor(webgl){\n    this.webgl = webgl;\n    this.render_random();\n\n    this.loadAudio();\n\n    this.frequencyNum = 1024;\n  }\n\n  render_random(){\n    const _this = this;\n    (function animation(){\n      _this.webgl.render();\n      requestAnimationFrame(animation);\n    })();\n  }\n\n  loadAudio(){\n    const _this = this;\n\n    const btn = document.getElementById(\"soundIcon\");\n    btn.addEventListener(\"click\", () => {\n\n      _this.audioContext = (window.AudioContext) ? new AudioContext : new webkitAudioContext;\n      _this.analyze = this.audioContext.createAnalyser();\n      _this.analyze.fftSize = 2048;\n      _this.data = new Uint8Array(this.analyze.fftSize);\n\n      if (btn.classList.value == \"fas fa-music fa-2x\"){\n        _this.source.stop();\n        _this.render_random();\n      }else{\n        const request = new XMLHttpRequest();\n        request.open(\"GET\", \"data/mrpu.m4a\", true);\n        request.responseType = \"arraybuffer\"\n\n        request.onload = function(){\n          _this.audioContext.decodeAudioData(request.response, function(buffer){\n            if(_this.source){\n              _this.source.stop();\n            }\n            _this.source = _this.audioContext.createBufferSource();\n            _this.source.buffer = buffer;\n            _this.source.loop = true;\n            _this.source.connect(_this.analyze);\n            _this.source.connect(_this.audioContext.destination);\n\n            _this.source.start(0);\n\n            (function animation(){\n              _this.analyze.getByteFrequencyData(_this.data);\n\n              _this.webgl.render();\n\n              requestAnimationFrame(animation);\n            })();\n\n          });\n        }.bind(_this);\n        request.send();\n      }\n    });\n  };\n}\n\n\n//# sourceURL=webpack:///./src/js/module/audio.js?");
-
-/***/ }),
-
-/***/ "./src/js/module/resize-watch.js":
-/*!***************************************!*\
-  !*** ./src/js/module/resize-watch.js ***!
-  \***************************************/
-/*! exports provided: ResizeWatch */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"ResizeWatch\", function() { return ResizeWatch; });\nclass ResizeWatch{\n  constructor(){\n    this.instances = [];\n\n    this.width = this._width = document.body.clientWidth;\n    this.height = this._height = window.innerHeight;\n    this.aspect = this.width / this.height;\n\n    window.onresize = function(){\n      if(this.instances.length === 0) return;\n\n      this.width = document.body.clientWidth;\n      this.height = window.innerHeight;\n      this.aspect = this.width / this.height;\n\n      for(let i=0; i<this.instances.length; i++){\n        this.instances[i].resizeUpdate();\n      }\n    }.bind(this)\n  }\n\n  register(instance){\n    this.instances.push(instance);\n  }\n}\n\nwindow.ResizeWatch = new ResizeWatch();\n\n\n//# sourceURL=webpack:///./src/js/module/resize-watch.js?");
-
-/***/ }),
-
-/***/ "./src/js/module/webgl.js":
-/*!********************************!*\
-  !*** ./src/js/module/webgl.js ***!
-  \********************************/
-/*! exports provided: Webgl */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"Webgl\", function() { return Webgl; });\nclass Webgl{\n  constructor(){\n    this.btn = document.getElementById(\"soundIcon\");\n    this.init();\n  }\n\n  init(){\n    window.ResizeWatch.register(this);\n\n    this.scene = new THREE.Scene();\n\n    this.gui = new dat.GUI({audoPlace: false});\n    this.gui.close();\n    const customContainer = document.getElementById(\"guiContainer\");\n    customContainer.appendChild(this.gui.domElement);\n\n    this.setProps();\n\n    this.camera = new THREE.PerspectiveCamera(this.props.fov, this.props.aspect, this.props.near, this.props.far);\n\n    this.renderer = new THREE.WebGLRenderer({\n      canvas: document.querySelector(\"#canvas\")\n    })\n    this.renderer.setPixelRatio(window.devicePixelRatio);\n    this.renderer.setClearColor(0x000000, 1);\n    this.renderer.setSize(window.ResizeWatch.width, window.ResizeWatch.height);\n\n    this.control = new THREE.OrbitControls(this.camera, this.renderer.domElement);\n    this.control.enabled = true;\n\n    this.meshes = [];\n\n    this.resizeUpdate();\n  }\n\n  resizeUpdate(){\n    this.setProps();\n    this.renderer.setSize(this.props.width, this.props.height);\n    this.camera.aspect = this.props.aspect;\n  }\n\n  setProps(){\n    const width = window.ResizeWatch.width;\n    const height = window.ResizeWatch.height;\n    const aspect = width / height;\n\n    this.props = {\n      width: width,\n      height: height,\n      aspect: aspect,\n      fov: 45,\n      left: -width / 2,\n      right: width / 2,\n      top: height / 2,\n      bottom: -height / 2,\n      near: 0.1,\n      far: 10000,\n      parent: document.getElementById(\"wrapper\"),\n    };\n  };\n\n  render(){\n    if (this.btn.classList.value == \"fas fa-music fa-2x openNav\"){\n      for(let i=0; i<this.meshes.length; i++){\n        this.meshes[i].render();\n      }\n      this.renderer.render(this.scene, this.camera);\n    }else{\n      for(let i=0; i<this.meshes.length; i++){\n        this.meshes[i].render_random()\n      }\n      this.renderer.render(this.scene, this.camera);\n    }\n  }\n}\n\n\n//# sourceURL=webpack:///./src/js/module/webgl.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _js_module_webgl_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../js/module/webgl.js */ \"../js/module/webgl.js\");\n/* harmony import */ var _js_module_audio_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../js/module/audio.js */ \"../js/module/audio.js\");\n/* harmony import */ var _js_module_resize_watch_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../js/module/resize-watch.js */ \"../js/module/resize-watch.js\");\n/* harmony import */ var _src_js_scene_pentagons_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/js/scene/pentagons.js */ \"./src/js/scene/pentagons.js\");\n\n\n\n\n\n\nwindow.onload = function(){\n\n  \"use strict\";\n\n  const webgl = new _js_module_webgl_js__WEBPACK_IMPORTED_MODULE_0__[\"Webgl\"]();\n  webgl.audio = new _js_module_audio_js__WEBPACK_IMPORTED_MODULE_1__[\"Audio\"](webgl, \"data/mrpu.m4a\");\n  webgl.meshes.push(new _src_js_scene_pentagons_js__WEBPACK_IMPORTED_MODULE_3__[\"Pentagons\"](webgl));\n\n  webgl.meshes[0].setVisible(true);\n}\n\n\n//# sourceURL=webpack:///./index.js?");
 
 /***/ }),
 

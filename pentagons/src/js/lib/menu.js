@@ -12,5 +12,7 @@ $(function() {
 $(function() {
   $('#soundIcon').click(function() {
     $('#soundIcon').toggleClass('openNav');
+    $('#soundIcon').toggleClass('fa-play-circle');
+    $('#soundIcon').toggleClass('fa-stop-circle');
   });
 });

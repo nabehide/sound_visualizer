@@ -60,7 +60,7 @@ export class Webgl{
   };
 
   render(){
-    if (this.btn.classList.value == "fas fa-music fa-2x openNav"){
+    if (this.btn.classList.value == "far fa-2x openNav fa-stop-circle"){
       for(let i=0; i<this.meshes.length; i++){
         this.meshes[i].render();
       }
