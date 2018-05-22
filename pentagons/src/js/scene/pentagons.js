@@ -11,7 +11,11 @@ export class Pentagons{
       uniforms[i] = {
         time: {type: "f", value: 1.0},
         frequency: {type: "f", value: 1.0},
-        num: {type: "f", value: i}
+        num: {type: "f", value: i},
+        red: {type: "f", value: 0.0},
+        green: {type: "f", value: 0.0},
+        blue: {type: "f", value: 1.0},
+        alpha: {type: "f", value: 1.0}
       };
     }
 
@@ -67,6 +71,10 @@ export class Pentagons{
     this.parameter = new Parameter_pentagons();
     this.folder = this.webgl.gui.addFolder("Pentagons");
     this.folder.add(this.parameter, "number", 1, MAX_NUMBER, 1);
+    this.folder.add(this.parameter, "red", 0.0, 1.0);
+    this.folder.add(this.parameter, "green", 0.0, 1.0);
+    this.folder.add(this.parameter, "blue", 0.0, 1.0);
+    this.folder.add(this.parameter, "alpha", 0.0, 1.0);
     this.folder.close();
   }
 
@@ -144,21 +152,33 @@ export class Pentagons{
     for(let i=0; i<this.parameter.number; i++){
       uniforms[i].frequency.value = this.webgl.audio.data[Math.floor(1024 / this.parameter.number * (i + 1))];
     }
-    for(let i=this.parameter.number; i<MAX_NUMBER; i++){
-      uniforms[i].frequency.value = 0.0;
-    }
+    this.render_common();
   }
 
   render_random(){
     for(let i=0; i<this.parameter.number; i++){
       uniforms[i].frequency.value = Math.sin(0.001 * i * (Date.now() - this.startTime)) * 100;
     }
+    this.render_common();
+  }
+
+  render_common(){
     for(let i=this.parameter.number; i<MAX_NUMBER; i++){
       uniforms[i].frequency.value = 0.0;
+    }
+    for(let i=0; i<this.parameter.number; i++){
+      uniforms[i].red.value = this.parameter.red;
+      uniforms[i].green.value = this.parameter.green;
+      uniforms[i].blue.value = this.parameter.blue;
+      uniforms[i].alpha.value = this.parameter.alpha;
     }
   }
 }
 
 const Parameter_pentagons = function(){
   this.number = 15;
+  this.red = 0.0;
+  this.green = 0.0;
+  this.blue = 1.0;
+  this.alpha = 1.0;
 }

@@ -25,7 +25,11 @@ export class Hexagon{
       uniforms[i] = {
         time: {type: "f", value: 1.0},
         frequency: {type: "f", value: 1.0},
-        num: {type: "f", value: i}
+        num: {type: "f", value: i},
+        red: {type: "f", value: 0.0},
+        green: {type: "f", value: 0.0},
+        blue: {type: "f", value: 1.0},
+        alpha: {type: "f", value: 1.0}
       };
     }
 
@@ -83,6 +87,10 @@ export class Hexagon{
     // this.folder.add(this.parameter, "row", 1, Math.sqrt(MAX_NUMBER), 1);
     // this.folder.add(this.parameter, "column", 1, Math.sqrt(MAX_NUMBER), 1);
     this.folder.add(this.parameter, "camera", 10, 100, 1);
+    this.folder.add(this.parameter, "red", 0.0, 1.0);
+    this.folder.add(this.parameter, "green", 0.0, 1.0);
+    this.folder.add(this.parameter, "blue", 0.0, 1.0);
+    this.folder.add(this.parameter, "alpha", 0.0, 1.0);
     this.folder.close();
   }
 
@@ -116,14 +124,6 @@ export class Hexagon{
       mesh.position.x = size * 2 * c - size * (r % 2) - this.parameter.column;
       mesh.position.y = size * 2 * r - this.parameter.row;
 
-      // let scale;
-      // if(i == 0){
-      //   scale = 1;
-      // }else{
-      //   scale = Math.pow(Math.sin(54 / 180 * Math.PI), i);
-      // }
-      // mesh.scale.set(scale, scale, scale);
-      
       this.webgl.scene.add(mesh);
     }
 
@@ -172,19 +172,26 @@ export class Hexagon{
     for(let i=0; i<this.parameter.column * this.parameter.row; i++){
       uniforms[this.list[i]].frequency.value = this.webgl.audio.data[Math.floor(1024 / (this.parameter.column * this.parameter.row) * (i + 1))];
     }
-    for(let i=this.parameter.column * this.parameter.row; i<MAX_NUMBER; i++){
-      uniforms[this.list[i]].frequency.value = 0.0;
-    }
+    this.render_common();
   }
 
   render_random(){
     this.webgl.camera.position.set(0, 0, this.parameter.camera);
     for(let i=0; i<this.parameter.column * this.parameter.row; i++){
       uniforms[i].frequency.value = Math.sin(0.000003 * i * (Date.now() - this.startTime)) * 100;
-      // uniforms[i].frequency.value = 1000;
     }
+    this.render_common();
+  }
+
+  render_common(){
     for(let i=this.parameter.column * this.parameter.row; i<MAX_NUMBER; i++){
-      uniforms[i].frequency.value = 0.0;
+      uniforms[this.list[i]].frequency.value = 0.0;
+    }
+    for(let i=0; i<this.parameter.column * this.parameter.row; i++){
+      uniforms[i].red.value = this.parameter.red;
+      uniforms[i].green.value = this.parameter.green;
+      uniforms[i].blue.value = this.parameter.blue;
+      uniforms[i].alpha.value = this.parameter.alpha;
     }
   }
 }
@@ -193,4 +200,8 @@ const Parameter_Hexagon = function(){
   this.column = 100;
   this.row = 100;
   this.camera = 30;
+  this.red = 0.0;
+  this.green = 0.0;
+  this.blue = 1.0;
+  this.alpha = 1.0;
 }
